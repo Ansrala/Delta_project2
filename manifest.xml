@@ -2,6 +2,12 @@
   <description brief="p2_delta">
 
      p2_delta
+     Using a subsumtion architecture, the robot will scan a room
+     using a laser scanner and search for a safe new home noted by
+     concrete pillars and a single door. The robot must avoid obstacles,
+     have a special door behavior, have a dance that it performs when the
+     safe room is detected, and a wander behavior to move around in the
+     room.
 
   </description>
   <author>Michael Barringer</author>
