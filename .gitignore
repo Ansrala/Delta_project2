@@ -1,5 +1,6 @@
 
 #ignore these folders
-!/bin
-!/build
-!/lib
+bin!/
+build!/
+lib!/
+*~

@@ -1,26 +1,20 @@
-//Do not add this to the manifest
-//this is purely for your benifit, to get something compiling and going.
 
-//the robot state is passed through string message on topic "FState"
-/*
-Accepted States are:
-SafetyDance
-ScanWander
-PTDoor
-Avoid
-*/
 
 #include "ros/ros.h"
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
-#include <std_msgs/String.h>
 #include <string>
+#include <std_msgs/String.h>
+
+using namespace std;
 
 string currState;
 
+void checkStateChange(const std_msgs::String& msg);
+
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "<name of your node here>");
+  ros::init(argc, argv, "p2_delta_ai");
   ros::NodeHandle n;
   ros::NodeHandle s;
   ros::NodeHandle ls;
@@ -28,16 +22,16 @@ int main(int argc, char **argv)
 
   //the state messenger doesn't need the same resolution as the cmd::velocity channel.  
 //Thus, we only publish 5 times a second.
-  ros::Publisher cmd_vel_pub = s.advertise<geometry_msgs::Twist>("FState", 5);
+  ros::Publisher cmd_vel_pub2 = s.advertise<geometry_msgs::Twist>("FState", 5);
 
- n,ros::Duration(30));
+ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"), n,ros::Duration(30));
     geometry_msgs::Twist msg;
 
 
    //we listen a little faster than we publish, since we don't know when it will change
    ros::Subscriber sub = ls.subscribe("chatter", 10, checkStateChange);
   
-   ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"),
+
    
 //begin your methodology
 
@@ -49,8 +43,8 @@ int main(int argc, char **argv)
 
 
 //grab the current State
-void checkStateChange(const std_msgs::String::ConstPtr& msg)
+void checkStateChange(const std_msgs::String& msg)
 {
-  ROS_INFO("Current State: [%s]", msg->data.c_str());
-  currState = *msg;
+  ROS_INFO("Current State: [%s]", msg.data.c_str());
+  currState = msg.data;
 }
