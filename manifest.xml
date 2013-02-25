@@ -19,6 +19,8 @@
   <depend package = "geometry_msgs"/>
   <depend package = "std_msgs"/>
   <depend package = "roscpp"/>
+  <depend package = "hokuyo_node"/>
+
 
 </package>
 

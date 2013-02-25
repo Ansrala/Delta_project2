@@ -11,7 +11,9 @@
 
 using namespace std;
 
+sensor_msgs::LaserScan now;
 
+void loadLaser(const sensor_msgs::LaserScan& msg);
 
 void checkStateChange(const std_msgs::String& msg);
 
@@ -29,8 +31,7 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(string("odom"), n,ros::Duration(3
     geometry_msgs::Twist msg;
 
 
-   //we listen a little faster than we publish, since we don't know when it will change
-   ros::Subscriber sub = ls.subscribe("chatter", 10, checkStateChange);
+
   
    ros::Subscriber info_get = sense.subscribe("scan", 500, loadLaser);
    ros::Publisher info_pub = talk.advertise<sensor_msgs::LaserScan>("worldinfo", 500);
@@ -44,15 +45,20 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(string("odom"), n,ros::Duration(3
 }
 
 
-//grab the current State
-void checkStateChange(const std_msgs::String& msg)
-{
-  ROS_INFO("Current State: [%s]", msg.data.c_str());
-  currState = msg.data;
-}
+
 
 //todo:: make info gathering function
 void loadLaser(const sensor_msgs::LaserScan& msg)
 {
+	//make a deep copy
+	//these are in radians
+	now.angle_min = msg.angle_min;
+	now.angle_max = msg.angle_max;
+	now.angle_increment = msg.angle_increment;
+
+	//time info
+	now.time_increment = msg.time_increment;
+	now.scan_time = msg.scan_time;	
+
 
 }
