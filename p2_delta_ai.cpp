@@ -29,11 +29,23 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"), n,ros::Durat
 
 
    //we listen a little faster than we publish, since we don't know when it will change
-   ros::Subscriber sub = ls.subscribe("chatter", 10, checkStateChange);
+   ros::Subscriber sub = ls.subscribe("worldinfo", 10, checkStateChange);
   
 
    
 //begin your methodology
+
+while()
+{
+	//testing stuff
+
+	if()  //safety dance
+	{}
+	else if() //door...stuff
+	{}
+	//etc
+}
+
 
 //end your methadology
 
@@ -48,3 +60,26 @@ void checkStateChange(const std_msgs::String& msg)
   ROS_INFO("Current State: [%s]", msg.data.c_str());
   currState = msg.data;
 }
+
+geometry_msgs::Twist avoidObstacle()
+{
+
+//assume currstate will have local location for obstacles (x,y,r)
+//know bounds for walls (x1, y1) (x2, y2)
+//assume floats
+}
+
+geometry_msgs::Twist passThroughDoor()
+{
+
+//assume currstate will have local location for obstacles (x,y,r)
+//know bounds for walls (x1, y1) (x2, y2)
+//assume floats
+}
+
+geometry_msgs::Twist wander()
+{
+
+}
+
+
