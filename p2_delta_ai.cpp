@@ -5,7 +5,7 @@
 #include <nav_msgs/Odometry.h>
 #include <string>
 #include <std_msgs/String.h>
-
+#include <math.h>
 using namespace std;
 
 string currState;
@@ -67,6 +67,34 @@ geometry_msgs::Twist avoidObstacle()
 //assume currstate will have local location for obstacles (x,y,r)
 //know bounds for walls (x1, y1) (x2, y2)
 //assume floats
+	if(/*wall exists*/ x1<0 && x2<0)//wall is entirely to left of robot
+	{
+		if(obstacleY > 0)
+		{
+		 	if(obstacleX > -16 && obstacleX < 12){
+				//distance = sqrt((pow(obstacleX,2) + pow(obstacleY,2)))
+				//veer right
+			}
+			else if( obstacleX > 12 && obstacleX < 16){
+				//veer left slightly
+			}
+		}
+		else if(/*no Wall infront*/){
+			if(obstacleX > -16 && obstacleX < 12){
+				//distance = sqrt((pow(obstacleX,2) + pow(obstacleY,2)))
+				//veer left
+			}
+			else if( obstacleX > 12 && obstacleX < 16){
+				//veer right slightly
+			}
+		}
+		else /*wall in front*/{
+			//veer right
+
+		}
+
+	}
+
 }
 
 geometry_msgs::Twist passThroughDoor()
