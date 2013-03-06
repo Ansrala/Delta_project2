@@ -5,15 +5,13 @@
 #include <nav_msgs/Odometry.h>
 #include <string>
 #include <std_msgs/String.h>
-<<<<<<< HEAD
-#include <math.h>
-=======
+
 
 //our custom messages
 #include <Delta_project2/lineList.h>
 #include <Delta_project2/pointList.h>
 
->>>>>>> ff2d23df8d418a4a9996ad40e4718608870969b5
+
 using namespace std;
 
 string currState;
@@ -80,7 +78,7 @@ void checkWallChange(const Delta_project2::lineList& msg)
   //currState = msg.data;
 }
 
-/*
+
 geometry_msgs::Twist avoidObstacle()
 {
 
