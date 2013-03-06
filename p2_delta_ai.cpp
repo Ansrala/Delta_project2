@@ -79,7 +79,21 @@ geometry_msgs::Twist passThroughDoor()
 
 geometry_msgs::Twist wander()
 {
+  geometry_msgs::Twist msg;
+  if()//I'm too close to the wall
+  {
+    //veer to the right
+  }
+  else if()//I'm too far from the wall
+  {
+    //veer to the left
+  }
+  else
+  {
+    //drive straight 
+  }
 
+  return msg;
 }
 
 

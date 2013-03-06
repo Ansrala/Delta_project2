@@ -11,7 +11,7 @@ using namespace std;
 string currState;
 
 int main(int argc, char **argv)
-{
+{ 
   ros::init(argc, argv, "p2_delta_wander");
   ros::NodeHandle n;
   ros::NodeHandle s;
