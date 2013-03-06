@@ -11,6 +11,10 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/LaserScan.h>
 
+//our custom messages
+#include <Delta_project2/lineList.h>
+#include <Delta_project2/pointList.h>
+
 
 using namespace std;
 

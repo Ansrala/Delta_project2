@@ -6,11 +6,17 @@
 #include <string>
 #include <std_msgs/String.h>
 
+//our custom messages
+#include <Delta_project2/lineList.h>
+#include <Delta_project2/pointList.h>
+
 using namespace std;
 
 string currState;
 
-void checkStateChange(const std_msgs::String& msg);
+void checkObstacleChange(const Delta_project2::pointList& msg);
+
+void checkWallChange(const Delta_project2::lineList& msg);
 
 int main(int argc, char **argv)
 {
@@ -18,6 +24,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::NodeHandle s;
   ros::NodeHandle ls;
+  ros::NodeHandle rs;
   ros::Publisher cmd_vel_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 
   //the state messenger doesn't need the same resolution as the cmd::velocity channel.  
@@ -29,12 +36,13 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"), n,ros::Durat
 
 
    //we listen a little faster than we publish, since we don't know when it will change
-   ros::Subscriber sub = ls.subscribe("worldinfo", 10, checkStateChange);
+  	ros::Subscriber suba = ls.subscribe("worldinfoObstacles", 10, checkObstacleChange);
+	ros::Subscriber subb = rs.subscribe("worldinfoWalls", 10, checkWallChange);
   
 
    
 //begin your methodology
-
+/*
 while()
 {
 	//testing stuff
@@ -45,7 +53,7 @@ while()
 	{}
 	//etc
 }
-
+*/
 
 //end your methadology
 
@@ -55,12 +63,20 @@ while()
 
 
 //grab the current State
-void checkStateChange(const std_msgs::String& msg)
+void checkObstacleChange(const Delta_project2::pointList& msg)
 {
-  ROS_INFO("Current State: [%s]", msg.data.c_str());
-  currState = msg.data;
+  //ROS_INFO("Current State: [%s]", msg.data.c_str());
+  //currState = msg.data;
 }
 
+//grab the current State
+void checkWallChange(const Delta_project2::lineList& msg)
+{
+  //ROS_INFO("Current State: [%s]", msg.data.c_str());
+  //currState = msg.data;
+}
+
+/*
 geometry_msgs::Twist avoidObstacle()
 {
 
@@ -81,5 +97,5 @@ geometry_msgs::Twist wander()
 {
 
 }
-
+*/
 
