@@ -128,18 +128,23 @@ geometry_msgs::Twist wander()
   geometry_msgs::Twist msg;
   if()//I'm too close to the wall
   {
+    msg.linear.x = 25;
+    msg.angular.z = 25;
     //veer to the right
   }
   else if()//I'm too far from the wall
   {
+    msg.linear.x = 25;
+    msg.angular.z = -25;
     //veer to the left
   }
   else
   {
+    msg.linear.x = 50;
+    msg.angular.z = 0;
     //drive straight 
   }
 
   return msg;
 }
-*/
 
