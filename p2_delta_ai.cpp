@@ -85,33 +85,50 @@ geometry_msgs::Twist avoidObstacle()
 //assume currstate will have local location for obstacles (x,y,r)
 //know bounds for walls (x1, y1) (x2, y2)
 //assume floats
-	if(/*wall exists*/ x1<0 && x2<0)//wall is entirely to left of robot
-	{
+geometry_msgs::Twist msg;
+//float distance;
+//distance = sqrt((pow(obstacleX,2) + pow(obstacleY,2)));
+	//if(/*wall exists*/ x1<0 && x2<0)//wall is entirely to left of robot
+	//{
 		if(obstacleY > 0)
 		{
 		 	if(obstacleX > -16 && obstacleX < 12){
-				//distance = sqrt((pow(obstacleX,2) + pow(obstacleY,2)))
+				
 				//veer right
+				msg.linear.x = 0.25;
+				msg.angular.z = -0.25;
 			}
 			else if( obstacleX > 12 && obstacleX < 16){
 				//veer left slightly
+				msg.linear.x = 0.25;
+				msg.angular.z = 0.1;
 			}
+			else
+				msg.linear.x = 0.25;	
 		}
 		else if(/*no Wall infront*/){
 			if(obstacleX > -16 && obstacleX < 12){
-				//distance = sqrt((pow(obstacleX,2) + pow(obstacleY,2)))
 				//veer left
+				msg.linear.x = 0.25;
+				msg.angular.z = 0.25;
+
 			}
 			else if( obstacleX > 12 && obstacleX < 16){
 				//veer right slightly
+				msg.linear.x = 0.25;
+				msg.angular.z = -0.1;
 			}
+			else
+				msg.linear.x = 0.25;
 		}
 		else /*wall in front*/{
 			//veer right
-
+			msg.linear.x = 0.25;
+			msg.angular.z = -0.50;
 		}
 
-	}
+	//}
+	return msg;
 
 }
 
