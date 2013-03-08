@@ -92,7 +92,15 @@ for(int i = 0; i < ANGLE_RES; i++)
 int* linearcoordX = new int[ranges.size()];
 int* linearcoordY = new int[ranges.size()];
 
+
+
 //convert to linear coords here
+for (int i = 0; i < ranges.size(); i++)
+{
+	linearcoordX[i] = now.ranges[i] * cos(now.angle_min + i * now.angle_increment);
+	linearcoordY[i] = now.ranges[i] * sin(now.angle_min + i * now.angle_increment);
+
+}
 
 //end conversion
 
@@ -148,5 +156,9 @@ void loadLaser(const sensor_msgs::LaserScan& msg)
 	now.time_increment = msg.time_increment;
 	now.scan_time = msg.scan_time;	
 
+	for(int i = 0; i < msg.ranges.size(); i++)
+	{
+		now.ranges.push_back(msg.ranges[i]);
+	}
 
 }
