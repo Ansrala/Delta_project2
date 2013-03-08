@@ -3,6 +3,7 @@
 //posts them to "worldinfo" topic
 
 #define ANGLE_RES 10
+#define PI 3.14592
 
 #include "ros/ros.h"
 #include <geometry_msgs/Twist.h>
@@ -10,6 +11,8 @@
 #include <string>
 #include <std_msgs/String.h>
 #include <sensor_msgs/LaserScan.h>
+#include <stdlib.h>
+#include <cmath>
 
 //our custom messages
 #include <Delta_project2/lineList.h>
@@ -38,6 +41,24 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(string("odom"), n,ros::Duration(3
     geometry_msgs::Twist msg;
 
 
+//setup comparison lines, save this poor gumstick some maths
+float constAngles[ANGLE_RES];
+float lineSlope[ANGLE_RES];
+float cosAngles[ANGLE_RES];
+float sinAngles[ANGLE_RES];
+float slope[ANGLE_RES];
+float diffm1m2[ANGLE_RES];
+for(int i = 0; i < ANGLE_RES; i++)
+{
+	constAngles[i] = PI / ANGLE * i +.001;
+	cosAngles[i] = cos(PI / ANGLE * i);
+	sinAngles[i] = sin(PI / ANGLE * i);
+	slope[i] = tan(constAngles[i]);
+	//antiSlope is tan(constAngles[i] + PI/2), soooooo
+	diffm1m2 = abs(tan(constAngles[i])) - tan(constAngles[i] + PI/2);
+}
+
+
 
   
    ros::Subscriber info_get = sense.subscribe("scan", 500, loadLaser);
@@ -52,7 +73,7 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(string("odom"), n,ros::Duration(3
 //http://en.wikipedia.org/wiki/Hough_transform
 
 //basically, for each point, You draw a bunch of standard lines over it, as defined by you
-//for here, it is defined as ANGLE_RES, where the robot will check each point 10 times, against each line 
+//for here, it is defined as ANGLE_RES, where the robot will check each point ANGLE_RES times, against each point 
 //Where each line is an angle 180/ANGLE_RES
 //for each line, a perpendicular line is drawn from your defined line to the orgin, and the distance measured
 //these results are stored in a matrix angleOfTestLine to distance measured
@@ -66,6 +87,43 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(string("odom"), n,ros::Duration(3
 //normal slope = -(y2-y1)/(x2-x1) or (y2-y1)/-(x2-x1)
 //y1 = slope(x1) + c
 //c = y1 - slope(x1)
+
+
+int* linearcoordX = new int[ranges.size()];
+int* linearcoordY = new int[ranges.size()];
+
+//convert to linear coords here
+
+//end conversion
+
+
+
+//make distance matrix
+int* distMatrix[ANGLE_RES] = new int[ranges.size()];
+int Xcross;
+int Ycross;
+int c1;
+
+for(int i = 0; i < ranges.size(); i++)
+{
+	for(int j = 0; j < ANGLE_RES; j++)
+	{
+		//find y-intercept
+		//c1 = y1 - mx1
+		c1 = linearcoordY[i] - linearcoordX[i] * slope[j];
+
+		//find the common X coord
+		Xcross = c1 / diffm1m2[j];
+		Ycross = slope[j] * Xcross + c1;
+
+		distMatris[j][i] = sqrt(Xcross * Xcross + Ycross * Ycross);
+	}
+}
+
+//compare each column, note points that have similar distances
+
+
+
 
 
 //end your methadology
