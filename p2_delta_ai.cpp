@@ -1,6 +1,7 @@
 
 
 #include "ros/ros.h"
+#include "serializer/SensorState.h"
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <string>
@@ -27,6 +28,7 @@ int main(int argc, char **argv)
   ros::NodeHandle s;
   ros::NodeHandle ls;
   ros::NodeHandle rs;
+  ros::NodeHandle ss;
   ros::Publisher cmd_vel_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 
   //the state messenger doesn't need the same resolution as the cmd::velocity channel.  
@@ -40,7 +42,7 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"), n,ros::Durat
    //we listen a little faster than we publish, since we don't know when it will change
   	ros::Subscriber suba = ls.subscribe("worldinfoObstacles", 10, checkObstacleChange);
 	ros::Subscriber subb = rs.subscribe("worldinfoWalls", 10, checkWallChange);
-  
+        ros::Subscriber subc = ss.subscribe("sensors", 10, checkSensorChange);
 
    
 //begin your methodology
@@ -78,6 +80,10 @@ void checkWallChange(const Delta_project2::lineList& msg)
   //currState = msg.data;
 }
 
+void checkSensorChange(const Serializer::SensorState& msg)
+{
+  
+}
 
 geometry_msgs::Twist avoidObstacle()
 {
@@ -85,33 +91,50 @@ geometry_msgs::Twist avoidObstacle()
 //assume currstate will have local location for obstacles (x,y,r)
 //know bounds for walls (x1, y1) (x2, y2)
 //assume floats
-	if(/*wall exists*/ x1<0 && x2<0)//wall is entirely to left of robot
-	{
+geometry_msgs::Twist msg;
+//float distance;
+//distance = sqrt((pow(obstacleX,2) + pow(obstacleY,2)));
+	//if(/*wall exists*/ x1<0 && x2<0)//wall is entirely to left of robot
+	//{
 		if(obstacleY > 0)
 		{
 		 	if(obstacleX > -16 && obstacleX < 12){
-				//distance = sqrt((pow(obstacleX,2) + pow(obstacleY,2)))
+				
 				//veer right
+				msg.linear.x = 0.25;
+				msg.angular.z = -0.25;
 			}
 			else if( obstacleX > 12 && obstacleX < 16){
 				//veer left slightly
+				msg.linear.x = 0.25;
+				msg.angular.z = 0.1;
 			}
+			else
+				msg.linear.x = 0.25;	
 		}
 		else if(/*no Wall infront*/){
 			if(obstacleX > -16 && obstacleX < 12){
-				//distance = sqrt((pow(obstacleX,2) + pow(obstacleY,2)))
 				//veer left
+				msg.linear.x = 0.25;
+				msg.angular.z = 0.25;
+
 			}
 			else if( obstacleX > 12 && obstacleX < 16){
 				//veer right slightly
+				msg.linear.x = 0.25;
+				msg.angular.z = -0.1;
 			}
+			else
+				msg.linear.x = 0.25;
 		}
 		else /*wall in front*/{
 			//veer right
-
+			msg.linear.x = 0.25;
+			msg.angular.z = -0.50;
 		}
 
-	}
+	//}
+	return msg;
 
 }
 
@@ -126,25 +149,42 @@ geometry_msgs::Twist passThroughDoor()
 geometry_msgs::Twist wander()
 {
   geometry_msgs::Twist msg;
-  if()//I'm too close to the wall
+  float32 value = getValue();
+  if(value<=1.75)//I'm too close to the wall
   {
-    msg.linear.x = 25;
-    msg.angular.z = 25;
+    msg.linear.x = .25;
+    msg.angular.z = -.15;
     //veer to the right
   }
-  else if()//I'm too far from the wall
+  else if(value>=1.25)//I'm too far from the wall
   {
-    msg.linear.x = 25;
-    msg.angular.z = -25;
+    msg.linear.x = .25;
+    msg.angular.z = .15;
     //veer to the left
   }
   else
   {
-    msg.linear.x = 50;
+    msg.linear.x = .25;
     msg.angular.z = 0;
     //drive straight 
   }
 
   return msg;
 }
+
+float32 getValue()
+{
+  serializer::sensor msg;
+  for(int i = 0; msg <=5; i++)
+  {
+    if(msg.name[i] == "left_ir")
+    {
+      return msg.value[i];
+    }
+  }
+}
+
+
+
+
 
