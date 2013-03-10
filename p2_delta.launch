@@ -6,9 +6,11 @@
 	<rosparam file="/home/siue/ros_pkgs/stinger/stinger_params_2.yaml" command="load" />
 	</node>	
 
-	<node  pkg = "hokuyo_node" type "hokuyo_node" output = "screen">
+	<node name = "hokuyo"  pkg = "hokuyo_node" type = "hokuyo_node" output = "screen">
 	<param name = "frame_id" value = "base_laser" />
 	</node>
 	
+	<node name = "AI" package= "p2_delta" type = "AI"/>
+	<node name = "sensor" package = "p2_delta" type = "sensor"/>
 
 </launch>
