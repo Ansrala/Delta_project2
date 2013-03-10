@@ -1,0 +1,14 @@
+<launch>
+	<!--our nodes here-->
+	
+	<!--serializer-->
+	<node name = "serializer" pkg = "serializer" type = "serializer_node.py">
+	<rosparam file="/home/siue/ros_pkgs/stinger/stinger_params_2.yaml" command="load" />
+	</node>	
+
+	<node  pkg = "hokuyo_node" type "hokuyo_node" output = "screen">
+	<param name = "frame_id" value = "base_laser" />
+	</node>
+	
+
+</launch>
