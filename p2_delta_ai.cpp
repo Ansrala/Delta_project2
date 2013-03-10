@@ -8,25 +8,25 @@
 #include <std_msgs/String.h>
 
 //our custom messages
-#include <Delta_project2/lineList.h>
-#include <Delta_project2/pointList.h>
+#include <p2_delta/lineList.h>
+#include <p2_delta/pointList.h>
 
 
 using namespace std;
 
-Delta_project2::lineList walls;
-Delta_project2::pointList obstacles;
+p2_delta::lineList walls;
+p2_delta::pointList obstacles;
 
 
 string currState;
 
 void checkSensorChange(const serializer::SensorState& msg);
-void checkObstacleChange(const Delta_project2::pointList& msg);
+void checkObstacleChange(const p2_delta::pointList& msg);
 //geometry_msgs::Twist passThroughDoor();
 geometry_msgs::Twist avoidObstacle();
 geometry_msgs::Twist wander();
 float getValue();
-void checkWallChange(const Delta_project2::lineList& msg);
+void checkWallChange(const p2_delta::lineList& msg);
 
 int main(int argc, char **argv)
 {
@@ -80,7 +80,7 @@ while(ros::ok())
 
 
 //grab the current State
-void checkObstacleChange(const Delta_project2::pointList& msg)
+void checkObstacleChange(const p2_delta::pointList& msg)
 {
 	for(int i = 0; i < msg.x.size(); i++)
 	{
@@ -92,7 +92,7 @@ void checkObstacleChange(const Delta_project2::pointList& msg)
 }
 
 //grab the current State
-void checkWallChange(const Delta_project2::lineList& msg)
+void checkWallChange(const p2_delta::lineList& msg)
 {
   	for(int i = 0; i < msg.x1.size(); i++)
 	{

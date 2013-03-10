@@ -1,9 +1,0 @@
-<launch>
-	<!--our nodes here-->
-	
-	<!--serializer-->
-	<node name = "teleop_serial" pkg = "serializer" type = "serializer_node.py">
-	<rosparam file="/home/siue/ros_pkgs/stinger/stinger_params.yaml" command="load" />
-	</node>	
-
-</launch>

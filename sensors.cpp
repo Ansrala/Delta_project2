@@ -18,8 +18,8 @@
 #include <cmath>
 
 //our custom messages
-#include <Delta_project2/lineList.h>
-#include <Delta_project2/pointList.h>
+#include <p2_delta/lineList.h>
+#include <p2_delta/pointList.h>
 
 
 using namespace std;
@@ -64,11 +64,11 @@ for(int i = 0; i < ANGLE_RES; i++)
 
   
    ros::Subscriber info_get = sense.subscribe("scan", 500, loadLaser);
-   ros::Publisher info_pub1 = talk.advertise<Delta_project2::pointList>("worldinfopoints", 500);
-   ros::Publisher info_pub2 = talk.advertise<Delta_project2::lineList>("worldinfolines", 500);
+   ros::Publisher info_pub1 = talk.advertise<p2_delta::pointList>("worldinfopoints", 500);
+   ros::Publisher info_pub2 = talk.advertise<p2_delta::lineList>("worldinfolines", 500);
 
-   Delta_project2::lineList linesOut;
-   Delta_project2::pointList pointsOut;
+   p2_delta::lineList linesOut;
+   p2_delta::pointList pointsOut;
    
 //begin your methodology
 
