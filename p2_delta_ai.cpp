@@ -15,6 +15,10 @@
 
 using namespace std;
 
+Delta_project2::lineList walls;
+Delta_project2::pointList obstacles;
+
+
 string currState;
 
 void checkObstacleChange(const Delta_project2::pointList& msg);
@@ -40,8 +44,8 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"), n,ros::Durat
 
 
    //we listen a little faster than we publish, since we don't know when it will change
-  	ros::Subscriber suba = ls.subscribe("worldinfoObstacles", 10, checkObstacleChange);
-	ros::Subscriber subb = rs.subscribe("worldinfoWalls", 10, checkWallChange);
+  	ros::Subscriber suba = ls.subscribe("worldinfoPoints", 10, checkObstacleChange);
+	ros::Subscriber subb = rs.subscribe("worldinfoLines", 10, checkWallChange);
         ros::Subscriber subc = ss.subscribe("sensors", 10, checkSensorChange);
 
    
@@ -69,15 +73,28 @@ while()
 //grab the current State
 void checkObstacleChange(const Delta_project2::pointList& msg)
 {
-  //ROS_INFO("Current State: [%s]", msg.data.c_str());
-  //currState = msg.data;
+	for(int i = 0; i < msg.x.size(); i++)
+	{
+		obstacles.x.push_back(msg.x[i]);
+		obstacles.y.push_back(msg.y[i]);
+		//obstacles.z.push_back(msg.z[i]);
+		obstacles.radius.push_back(msg.radius[i]);
+	}
 }
 
 //grab the current State
 void checkWallChange(const Delta_project2::lineList& msg)
 {
-  //ROS_INFO("Current State: [%s]", msg.data.c_str());
-  //currState = msg.data;
+  	for(int i = 0; i < msg.x1.size(); i++)
+	{
+		wall.x1.push_back(msg.x1[i]);
+		wall.y1.push_back(msg.y1[i]);
+		//wall.z1.push_back(msg.z1[i]);
+
+		wall.x2.push_back(msg.x2[i]);
+		wall.y2.push_back(msg.y2[i]);
+		//wall.z2.push_back(msg.z2[i]);
+	}
 }
 
 void checkSensorChange(const Serializer::SensorState& msg)
@@ -87,14 +104,14 @@ void checkSensorChange(const Serializer::SensorState& msg)
 
 geometry_msgs::Twist avoidObstacle()
 {
-
+/*
 //assume currstate will have local location for obstacles (x,y,r)
 //know bounds for walls (x1, y1) (x2, y2)
 //assume floats
 geometry_msgs::Twist msg;
 //float distance;
 //distance = sqrt((pow(obstacleX,2) + pow(obstacleY,2)));
-	//if(/*wall exists*/ x1<0 && x2<0)//wall is entirely to left of robot
+	//if( x1<0 && x2<0)//wall is entirely to left of robot
 	//{
 		if(obstacleY > 0)
 		{
@@ -112,7 +129,7 @@ geometry_msgs::Twist msg;
 			else
 				msg.linear.x = 0.25;	
 		}
-		else if(/*no Wall infront*/){
+		else if(){
 			if(obstacleX > -16 && obstacleX < 12){
 				//veer left
 				msg.linear.x = 0.25;
@@ -127,7 +144,7 @@ geometry_msgs::Twist msg;
 			else
 				msg.linear.x = 0.25;
 		}
-		else /*wall in front*/{
+		else {
 			//veer right
 			msg.linear.x = 0.25;
 			msg.angular.z = -0.50;
@@ -135,7 +152,7 @@ geometry_msgs::Twist msg;
 
 	//}
 	return msg;
-
+*/
 }
 
 geometry_msgs::Twist passThroughDoor()
@@ -148,6 +165,7 @@ geometry_msgs::Twist passThroughDoor()
 
 geometry_msgs::Twist wander()
 {
+/*
   geometry_msgs::Twist msg;
   float32 value = getValue();
   if(value<=1.75)//I'm too close to the wall
@@ -181,7 +199,7 @@ float32 getValue()
     {
       return msg.value[i];
     }
-  }
+  }*/
 }
 
 

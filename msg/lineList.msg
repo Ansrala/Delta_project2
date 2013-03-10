@@ -1,7 +1,7 @@
-int16 x1
-int16 y1
-int16 z1
+float32[] x1
+float32[] y1
+float32[] z1
 
-int16 x2
-int16 y2
-int16 z2
+float32[] x2
+float32[] y2
+float32[] z2

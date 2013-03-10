@@ -3,6 +3,9 @@
 //posts them to "worldinfo" topic
 
 #define ANGLE_RES 10
+#define SKIP_MAX 2
+#define THRESHOLD .2
+
 #define PI 3.14592
 
 #include "ros/ros.h"
@@ -43,26 +46,29 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(string("odom"), n,ros::Duration(3
 
 //setup comparison lines, save this poor gumstick some maths
 float constAngles[ANGLE_RES];
-float lineSlope[ANGLE_RES];
 float cosAngles[ANGLE_RES];
 float sinAngles[ANGLE_RES];
 float slope[ANGLE_RES];
 float diffm1m2[ANGLE_RES];
 for(int i = 0; i < ANGLE_RES; i++)
 {
-	constAngles[i] = PI / ANGLE * i +.001;
-	cosAngles[i] = cos(PI / ANGLE * i);
-	sinAngles[i] = sin(PI / ANGLE * i);
+	constAngles[i] = PI / ANGLE_RES * i +.001;
+	cosAngles[i] = cos(PI / ANGLE_RES * i);
+	sinAngles[i] = sin(PI / ANGLE_RES * i);
 	slope[i] = tan(constAngles[i]);
 	//antiSlope is tan(constAngles[i] + PI/2), soooooo
-	diffm1m2 = abs(tan(constAngles[i])) - tan(constAngles[i] + PI/2);
+	diffm1m2[i] = abs(tan(constAngles[i])) - tan(constAngles[i] + PI/2);
 }
 
 
 
   
    ros::Subscriber info_get = sense.subscribe("scan", 500, loadLaser);
-   ros::Publisher info_pub = talk.advertise<sensor_msgs::LaserScan>("worldinfo", 500);
+   ros::Publisher info_pub1 = talk.advertise<Delta_project2::pointList>("worldinfopoints", 500);
+   ros::Publisher info_pub2 = talk.advertise<Delta_project2::lineList>("worldinfolines", 500);
+
+   Delta_project2::lineList linesOut;
+   Delta_project2::pointList pointsOut;
    
 //begin your methodology
 
@@ -89,13 +95,13 @@ for(int i = 0; i < ANGLE_RES; i++)
 //c = y1 - slope(x1)
 
 
-int* linearcoordX = new int[ranges.size()];
-int* linearcoordY = new int[ranges.size()];
+int* linearcoordX = new int[now.ranges.size()];
+int* linearcoordY = new int[now.ranges.size()];
 
 
 
 //convert to linear coords here
-for (int i = 0; i < ranges.size(); i++)
+for (int i = 0; i < now.ranges.size(); i++)
 {
 	linearcoordX[i] = now.ranges[i] * cos(now.angle_min + i * now.angle_increment);
 	linearcoordY[i] = now.ranges[i] * sin(now.angle_min + i * now.angle_increment);
@@ -105,14 +111,15 @@ for (int i = 0; i < ranges.size(); i++)
 //end conversion
 
 
-
 //make distance matrix
-int* distMatrix[ANGLE_RES] = new int[ranges.size()];
+int* distMatrix[ANGLE_RES];
+for(int i = 0; i < ANGLE_RES; i++)
+	distMatrix[i] = new int[now.ranges.size()];
 int Xcross;
 int Ycross;
 int c1;
 
-for(int i = 0; i < ranges.size(); i++)
+for(int i = 0; i < now.ranges.size(); i++)
 {
 	for(int j = 0; j < ANGLE_RES; j++)
 	{
@@ -124,11 +131,49 @@ for(int i = 0; i < ranges.size(); i++)
 		Xcross = c1 / diffm1m2[j];
 		Ycross = slope[j] * Xcross + c1;
 
-		distMatris[j][i] = sqrt(Xcross * Xcross + Ycross * Ycross);
+		distMatrix[j][i] = sqrt(Xcross * Xcross + Ycross * Ycross);
 	}
 }
 
 //compare each column, note points that have similar distances
+float last = -50;
+bool onAline =  false;
+
+for(int j = 0; j < now.ranges.size(); j++)
+{
+
+	for(int i = 0; i < ANGLE_RES; i++)
+	{
+		// is like the last point
+		if(distMatrix[i][j] > last - THRESHOLD && distMatrix[i][j] < last + THRESHOLD  )
+		{
+			//new line
+			if(!onAline)
+			{
+				onAline = true;
+				//create new line	
+
+				linesOut.x1.push_back(linearcoordX[j-1]);
+				linesOut.y1.push_back(linearcoordY[j-1]);
+
+				linesOut.x2.push_back(linearcoordX[j]);
+				linesOut.y2.push_back(linearcoordY[j]);
+			}
+			//old line
+			else
+			{
+				linesOut.x2.push_back(linearcoordX[j]);
+				linesOut.y2.push_back(linearcoordY[j]);
+			}
+				
+			
+		}
+		else
+		{
+			onAline = false;
+		}
+	}
+}
 
 
 

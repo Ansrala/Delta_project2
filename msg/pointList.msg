@@ -1,4 +1,4 @@
-int16[] x
-int16[] y
-int16[] z
-int16[] radius
+float32[] x
+float32[] y
+float32[] z
+float32[] radius
