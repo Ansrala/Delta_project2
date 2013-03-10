@@ -58,7 +58,7 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"), n,ros::Durat
 while(ros::ok())
 {
 	//testing stuff
-	output = avoidObstacle();
+	output = wander(); //avoidObstacle();
 /*
 	if()  //safety dance
 	{}
@@ -175,9 +175,9 @@ for(int i = 0; i < walls.x1.size();i++){
 //assume floats
 //}
 
-//geometry_msgs::Twist wander()
-//{
-/*
+geometry_msgs::Twist wander()
+{
+
   geometry_msgs::Twist msg;
   float32 value = getValue();
   if(value<=1.75)//I'm too close to the wall
@@ -211,8 +211,8 @@ float32 getValue()
     {
       return msg.value[i];
     }
-  }*/
-//}
+  }
+}
 
 
 
