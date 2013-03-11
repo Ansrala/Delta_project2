@@ -109,6 +109,7 @@ void checkWallChange(const p2_delta::lineList& msg)
 
 void checkSensorChange(const serializer::SensorState& msg)
 {
+	ROS_INFO("
   	for(int i = 0; i < msg.name.size(); i++)
 	{
 		serialSensors.name.push_back(msg.name[i]);	
