@@ -140,35 +140,39 @@ for(int i = 0; i < walls.x1.size();i++){
 		 	if(obstacles.x[0] > -16 && obstacles.x[0] < 12){
 				
 				//veer right
-				msg.linear.x = 0.25;
-				msg.angular.z = -0.25;
+				msg.linear.x = 0.1;
+				msg.angular.z = -0.3;
 			}
 			else if( obstacles.x[0] > 12 && obstacles.x[0] < 16){
 				//veer left slightly
-				msg.linear.x = 0.25;
-				msg.angular.z = 0.1;
+				msg.linear.x = 0.1;
+				msg.angular.z = 0.3;
 			}
-			else
-				msg.linear.x = 0.25;	
+			else{
+				msg.linear.x = 0.25;
+				msg.angular.z = 0;	
+			    }
 		}
 		else if(!wallInFront){
 			if(obstacles.x[0] > -16 && obstacles.x[0] < 12){
 				//veer left
-				msg.linear.x = 0.25;
-				msg.angular.z = 0.25;
+				msg.linear.x = 0.1;
+				msg.angular.z = 0.3;
 
 			}
 			else if( obstacles.x[0] > 12 && obstacles.x[0] < 16){
 				//veer right slightly
-				msg.linear.x = 0.25;
-				msg.angular.z = -0.1;
+				msg.linear.x = 0.1;
+				msg.angular.z = -0.3;
 			}
-			else
+			else{
 				msg.linear.x = 0.25;
+				msg.angular.z = 0;
+			    }
 		}
 		else {
 			//veer right
-			msg.linear.x = 0.25;
+			msg.linear.x = 0.1;
 			msg.angular.z = -0.50;
 		}
 
@@ -195,14 +199,14 @@ geometry_msgs::Twist wander()
   {
 	ROS_INFO("VEER RIGHT");
     msg.linear.x = .25;
-    msg.angular.z = -.15;
+    msg.angular.z = -.3;
     //veer to the right
   }
   else if(value>=1.25)//I'm too far from the wall
   {
 	ROS_INFO("VEER LEFT");
     msg.linear.x = .25;
-    msg.angular.z = .15;
+    msg.angular.z = .3;
     //veer to the left
   }
   else
