@@ -94,6 +94,8 @@ for(int i = 0; i < ANGLE_RES; i++)
 //y1 = slope(x1) + c
 //c = y1 - slope(x1)
 
+while(ros::ok())
+{
 
 int* linearcoordX = new int[now.ranges.size()];
 int* linearcoordY = new int[now.ranges.size()];
@@ -138,6 +140,9 @@ for(int i = 0; i < now.ranges.size(); i++)
 //compare each column, note points that have similar distances
 float last = -50;
 bool onAline =  false;
+int skips = 0;
+float lastHitX = 0;
+float lastHitY = 0;
 
 for(int j = 0; j < now.ranges.size(); j++)
 {
@@ -151,6 +156,7 @@ for(int j = 0; j < now.ranges.size(); j++)
 			if(!onAline)
 			{
 				onAline = true;
+				skips = 0;
 				//create new line	
 
 				linesOut.x1.push_back(linearcoordX[j-1]);
@@ -158,24 +164,63 @@ for(int j = 0; j < now.ranges.size(); j++)
 
 				linesOut.x2.push_back(linearcoordX[j]);
 				linesOut.y2.push_back(linearcoordY[j]);
+
+				lastHitX = linesOut.x2.back();
+				lastHitY = linesOut.y2.back();
 			}
-			//old line
-			else
+			else 
 			{
-				linesOut.x2.push_back(linearcoordX[j]);
-				linesOut.y2.push_back(linearcoordY[j]);
+				skips = 0;
+				linesOut.x2.back() = linearcoordX[j];
+				linesOut.y2.back() = linearcoordY[j];
+
+				lastHitX = linesOut.x2.back();
+				lastHitY = linesOut.y2.back();
+			
 			}
 				
 			
 		}
+		//strayed from the line
 		else
 		{
-			onAline = false;
+			skips++;
+			//grace period
+			if(skips < SKIP_MAX)
+			{
+				//add anyway
+				linesOut.x2.back() = linearcoordX[j];
+				linesOut.y2.back() = linearcoordY[j];
+			}
+			//new line
+			else
+			{
+				onAline = false;
+				linesOut.x2.back() = lastHitX;
+				linesOut.y2.back() = lastHitY;
+
+				for(int k = 0; k < skips; k++)
+				{
+					pointsOut.x.push_back(linearcoordX[j-k]);
+					pointsOut.y.push_back(linearcoordY[j-k]);
+				}
+			}
 		}
+
+		last = distMatrix[i][j];
 	}
+	last = -50;
 }
+info_pub1.publish(pointsOut);
+info_pub2.publish(linesOut);
 
 
+delete [] linearcoordY;
+delete [] linearcoordX;
+for(int i = 0; i < ANGLE_RES; i++)
+	delete [] distMatrix[i];
+
+}
 
 
 
