@@ -195,15 +195,16 @@ geometry_msgs::Twist wander()
 
   geometry_msgs::Twist msg;
   ROS_INFO("BEGIN WANDER");
-  float value = getValue();
-  if(value<=1.75)//I'm too close to the wall
+  float value = getValue(); 
+  ROS_INFO("%d sensorVal", value);
+  if(value<=15)//I'm too close to the wall
   {
 	ROS_INFO("VEER RIGHT");
     msg.linear.x = .25;
     msg.angular.z = -.3;
     //veer to the right
   }
-  else if(value>=1.25)//I'm too far from the wall
+  else if(value>=20)//I'm too far from the wall
   {
 	ROS_INFO("VEER LEFT");
     msg.linear.x = .25;
