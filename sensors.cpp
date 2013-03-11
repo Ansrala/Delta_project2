@@ -64,8 +64,8 @@ for(int i = 0; i < ANGLE_RES; i++)
 
   
    ros::Subscriber info_get = sense.subscribe("scan", 500, loadLaser);
-   ros::Publisher info_pub1 = talk.advertise<p2_delta::pointList>("worldinfopoints", 500);
-   ros::Publisher info_pub2 = talk.advertise<p2_delta::lineList>("worldinfolines", 500);
+   ros::Publisher info_pub1 = talk.advertise<p2_delta::pointList>("worldinfoPoints", 500);
+   ros::Publisher info_pub2 = talk.advertise<p2_delta::lineList>("worldinfoLines", 500);
 
    p2_delta::lineList linesOut;
    p2_delta::pointList pointsOut;

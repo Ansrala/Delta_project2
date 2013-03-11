@@ -16,6 +16,7 @@ using namespace std;
 
 p2_delta::lineList walls;
 p2_delta::pointList obstacles;
+serializer::SensorState serialSensors;
 
 
 string currState;
@@ -55,7 +56,7 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"), n,ros::Durat
 
    
 //begin your methodology
-
+ROS_INFO("STARTING LOOP");
 while(ros::ok())
 {
 	//testing stuff
@@ -108,7 +109,15 @@ void checkWallChange(const p2_delta::lineList& msg)
 
 void checkSensorChange(const serializer::SensorState& msg)
 {
-  
+  	for(int i = 0; i < msg.name.size(); i++)
+	{
+		serialSensors.name.push_back(msg.name[i]);	
+	}
+
+	for(int i = 0; i < msg.value.size(); i++)
+	{
+		serialSensors.value.push_back(msg.value[i]);
+	}
 }
 
 geometry_msgs::Twist avoidObstacle()
@@ -180,21 +189,25 @@ geometry_msgs::Twist wander()
 {
 
   geometry_msgs::Twist msg;
+  ROS_INFO("BEGIN WANDER");
   float value = getValue();
   if(value<=1.75)//I'm too close to the wall
   {
+	ROS_INFO("VEER RIGHT");
     msg.linear.x = .25;
     msg.angular.z = -.15;
     //veer to the right
   }
   else if(value>=1.25)//I'm too far from the wall
   {
+	ROS_INFO("VEER LEFT");
     msg.linear.x = .25;
     msg.angular.z = .15;
     //veer to the left
   }
   else
   {
+	ROS_INFO("STRAIGHT");
     msg.linear.x = .25;
     msg.angular.z = 0;
     //drive straight 
@@ -205,12 +218,13 @@ geometry_msgs::Twist wander()
 
 float getValue()
 {
-  serializer::SensorState msg;
-  for(int i = 0; i <=5; i++)
+  
+  for(int i = 0; i < serialSensors.name.size(); i++)
   {
-    if(msg.name[i] == "left_ir")
+	ROS_INFO("%d -index", i);
+    if(serialSensors.name[i] == "left_ir")
     {
-      return msg.value[i];
+      return serialSensors.value[i];
     }
   }
 }
