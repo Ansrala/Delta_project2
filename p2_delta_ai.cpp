@@ -41,6 +41,8 @@ int main(int argc, char **argv)
 
   geometry_msgs::Twist output;
 
+ros::Rate loop_rate(10);
+
   //the state messenger doesn't need the same resolution as the cmd::velocity channel.  
 //Thus, we only publish 5 times a second.
   ros::Publisher cmd_vel_pub2 = s.advertise<geometry_msgs::Twist>("FState", 5);
@@ -69,8 +71,9 @@ while(ros::ok())
 	else {output = wander();}
 */
 	//etc
-	//cmd_vel_pub.publish(output);
+	cmd_vel_pub.publish(output);
 	ros::spinOnce();
+	loop_rate.sleep();
 }
 
 

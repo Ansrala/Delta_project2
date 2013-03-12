@@ -4,8 +4,8 @@
 
 #define ANGLE_RES 7
 #define OB_SIZE 7
-#define THRESHOLD .1f
-#define MIN_POINT_COUNT 10
+#define THRESHOLD 1.0f
+#define MIN_POINT_COUNT 20
 #define PI 3.14592f
 
 #include "ros/ros.h"
@@ -117,6 +117,9 @@ float currSlope = 0;
 float nextSlope = 0;
 float endpoint[2];
 float startpoint[2];
+float obstacleStart[2];
+float obstacleEnd[2];
+int obstaclePoints = 0;
 
 for (int i = 0; i < now.ranges.size(); i++)
 {
@@ -190,6 +193,7 @@ for (int i = 0; i < now.ranges.size(); i++)
 		else
 		{
 		//	ROS_INFO("distancesquared greater then blah balh");
+			tempPointCount++;
 			if(stillwall)
 			{
 			//	ROS_INFO("stillwall");
@@ -202,8 +206,39 @@ for (int i = 0; i < now.ranges.size(); i++)
 			tempPointCount = 0;
 			skippedPointCount = 0;
 			//since this point is not a wall, it is an obstacle
-			pointsOut.x.push_back(linearcoordX[i]);
-			pointsOut.y.push_back(linearcoordY[i]);
+			//but is it part of the same obstacle?
+			if(obstaclePoints == 0)
+			{
+				//new obstacle
+				obstaclePoints++;
+				obstacleStart[0] = linearcoordX[i];
+				obstacleStart[1] = linearcoordY[i];
+				obstacleEnd[0] = linearcoordX[i];
+				obstacleEnd[1] = linearcoordY[i];
+				tempPointCount = 0;
+				skippedPointCount = 0;
+			}
+			else
+			{
+				distanceSquared = pow(linearcoordX[i]-linearcoordX[i-(1+skippedPointCount)],2) + pow(linearcoordY[i] - linearcoordY[i-(1+skippedPointCount)],2);
+				if(distanceSquared < pow(0.01 * (skippedPointCount+1),2))
+				{
+					obstacleEnd[0] = linearcoordX[i];
+					obstacleEnd[1] = linearcoordY[i];
+					obstaclePoints++;
+				}
+				else
+				{
+					//push average location
+					pointsOut.x.push_back((obstacleEnd[0] + obstacleStart[0])/2);
+					pointsOut.y.push_back((obstacleEnd[1] + obstacleStart[1])/2);
+					obstaclePoints = 0;
+				}
+				tempPointCount = 0;
+				skippedPointCount = 0;
+			}
+				
+			
 		}
 		
 			
