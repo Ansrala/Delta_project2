@@ -58,15 +58,18 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"), n,ros::Durat
    
 //begin your methodology
 ROS_INFO("STARTING LOOP");
+vector<int> collisions;
 while(ros::ok())
 {
 	//testing stuff
 	output = wander();
 /*
-	if() {output = dance();}
-	else if() {output = avoidObstacle();}
-	else if() {output = passThroughDoor();}
-	else {output = wander();}
+	if(goal) {output = dance();}
+	else 
+	{  if(collisions.size>0) {output = avoidObstacle();}
+	   else if(doorDetected) {output = passThroughDoor();}
+	   else {output = wander();}
+	}
 */
 	//etc
 	//cmd_vel_pub.publish(output);
@@ -80,6 +83,13 @@ while(ros::ok())
   return 0;
 }
 
+void checkObstacles(vector<int> &collObst)
+{
+  collObst.erase(collObst.begin(), collObst.end());
+  //for loop goes through collObst
+  //checks if its between -20 and 20
+  //add to collObst with push_back(i)
+}
 
 //grab the current State
 void checkObstacleChange(const p2_delta::pointList& msg)
@@ -195,13 +205,13 @@ geometry_msgs::Twist passThroughDoor()
 {
   geometry_msgs::Twist msg;
 
-  if(obstacles.x[0] > -16 && obstacles.x[0] < 12)
+  if(obstacles.x[0] > -16 && obstacles.x[0] < 0)
   {
       //veer right
       msg.linear.x = 0.1;
       msg.angular.z = -0.3;
   }
-  else if( obstacles.x[0] > 12 && obstacles.x[0] < 16){
+  else if( obstacles.x[0] > 0 && obstacles.x[0] < 16){
       //veer left slightly
       msg.linear.x = 0.1;
       msg.angular.z = 0.3;
@@ -220,10 +230,27 @@ geometry_msgs::Twist wander()
 {
 
   geometry_msgs::Twist msg;
+  bool wallInFront = false;
+  for(int i = 0; i < walls.x1.size();i++)
+  {
+     if(walls.x1[i] > 20 && walls.x2[i]<0)
+     {
+      if(pow(walls.x2[i],2)+pow(walls.y2[i],2)<pow(20,2))
+      {
+        wallInFront = true;
+      }
+     }
+  }
+
   ROS_INFO("BEGIN WANDER");
   float value = getValue(); 
   ROS_INFO("%f sensorVal", value);
-  if(value<=15)//I'm too close to the wall
+  if(wallInFront)
+  {
+    msg.linear.x = 0;
+    msg.angular.z = -.20;
+  }
+  else if(value<=15)//I'm too close to the wall
   {
 	ROS_INFO("VEER RIGHT");
     msg.linear.x = .25;
