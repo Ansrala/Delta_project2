@@ -103,6 +103,7 @@ int* linearcoordY = new int[now.ranges.size()];
 
 
 //convert to linear coords here
+ROS_INFO("making linear matrix");
 for (int i = 0; i < now.ranges.size(); i++)
 {
 	linearcoordX[i] = now.ranges[i] * cos(now.angle_min + i * now.angle_increment);
@@ -121,6 +122,7 @@ int Xcross;
 int Ycross;
 int c1;
 
+ROS_INFO("populating linera matrix");
 for(int i = 0; i < now.ranges.size(); i++)
 {
 	for(int j = 0; j < ANGLE_RES; j++)
@@ -144,17 +146,20 @@ int skips = 0;
 float lastHitX = 0;
 float lastHitY = 0;
 
+ROS_INFO("creating Hough transform matrix");
 for(int j = 0; j < now.ranges.size(); j++)
 {
 
 	for(int i = 0; i < ANGLE_RES; i++)
-	{
+	{   
+		ROS_INFO("j: %d , i: %d" , j, i);
 		// is like the last point
-		if(distMatrix[i][j] > last - THRESHOLD && distMatrix[i][j] < last + THRESHOLD  )
+		if(distMatrix[i][j] > last - THRESHOLD && distMatrix[i][j] < last + THRESHOLD && !(distMatrix[i][j] < .1f) && j > 0 )
 		{
 			//new line
 			if(!onAline)
 			{
+				ROS_INFO("starting new line...");
 				onAline = true;
 				skips = 0;
 				//create new line	
@@ -170,6 +175,7 @@ for(int j = 0; j < now.ranges.size(); j++)
 			}
 			else 
 			{
+				ROS_INFO("continuing line...");
 				skips = 0;
 				linesOut.x2.back() = linearcoordX[j];
 				linesOut.y2.back() = linearcoordY[j];
@@ -179,30 +185,35 @@ for(int j = 0; j < now.ranges.size(); j++)
 			
 			}
 				
-			
+			ROS_INFO("moving on...");
 		}
 		//strayed from the line
 		else
 		{
-			skips++;
-			//grace period
-			if(skips < SKIP_MAX)
+			if(onAline)
 			{
-				//add anyway
-				linesOut.x2.back() = linearcoordX[j];
-				linesOut.y2.back() = linearcoordY[j];
-			}
-			//new line
-			else
-			{
-				onAline = false;
-				linesOut.x2.back() = lastHitX;
-				linesOut.y2.back() = lastHitY;
-
-				for(int k = 0; k < skips; k++)
+				ROS_INFO("point skip");
+				skips++;
+				//grace period
+				if(skips < SKIP_MAX)
 				{
-					pointsOut.x.push_back(linearcoordX[j-k]);
-					pointsOut.y.push_back(linearcoordY[j-k]);
+					//add anyway
+					linesOut.x2.back() = linearcoordX[j];
+					linesOut.y2.back() = linearcoordY[j];
+				}
+				//new line
+				else
+				{
+					ROS_INFO("ending line");
+					onAline = false;
+					linesOut.x2.back() = lastHitX;
+					linesOut.y2.back() = lastHitY;
+
+					for(int k = 0; k < skips; k++)
+					{
+						pointsOut.x.push_back(linearcoordX[j-k]);
+						pointsOut.y.push_back(linearcoordY[j-k]);
+					}
 				}
 			}
 		}
@@ -214,11 +225,13 @@ for(int j = 0; j < now.ranges.size(); j++)
 info_pub1.publish(pointsOut);
 info_pub2.publish(linesOut);
 
-
+ROS_INFO("cleaning...");
 delete [] linearcoordY;
 delete [] linearcoordX;
 for(int i = 0; i < ANGLE_RES; i++)
 	delete [] distMatrix[i];
+
+ros::spinOnce();
 
 }
 
@@ -238,6 +251,7 @@ void loadLaser(const sensor_msgs::LaserScan& msg)
 {
 	//make a deep copy
 	//these are in radians
+	ROS_INFO("Sensors updated: point count = %f", msg.ranges.size());
 	now.angle_min = msg.angle_min;
 	now.angle_max = msg.angle_max;
 	now.angle_increment = msg.angle_increment;
@@ -246,6 +260,7 @@ void loadLaser(const sensor_msgs::LaserScan& msg)
 	now.time_increment = msg.time_increment;
 	now.scan_time = msg.scan_time;	
 
+	now.ranges.erase(now.ranges.begin(), now.ranges.end()); 
 	for(int i = 0; i < msg.ranges.size(); i++)
 	{
 		now.ranges.push_back(msg.ranges[i]);
