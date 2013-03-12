@@ -102,7 +102,7 @@ void checkObstacleChange(const p2_delta::pointList& msg)
 		obstacles.x.push_back(msg.x[i]);
 		obstacles.y.push_back(msg.y[i]);
 		//obstacles.z.push_back(msg.z[i]);
-		obstacles.radius.push_back(msg.radius[i]);
+		//obstacles.radius.push_back(msg.radius[i]);
 	}
 }
 
@@ -248,8 +248,18 @@ geometry_msgs::Twist wander()
   ROS_INFO("BEGIN WANDER");
   float value = getValue(); 
   ROS_INFO("%f sensorVal", value);
-  if(wallInFront)
+	
+  if (value < 0)
   {
+	ROS_INFO("SKIPPED");
+	msg.linear.x = 0;
+    msg.angular.z = 0;
+  }
+
+	
+  else if(wallInFront)
+  {
+   ROS_INFO("turning right");
     msg.linear.x = 0;
     msg.angular.z = -.20;
   }
@@ -280,7 +290,9 @@ geometry_msgs::Twist wander()
 
 float getValue()
 {
-  return serialSensors.value[1];
+	if(serialSensors.value.size() > 0)
+  		return serialSensors.value[1];
+	else return -1;
 }
 
 
