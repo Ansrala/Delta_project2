@@ -4,8 +4,8 @@
 
 #define ANGLE_RES 7
 #define OB_SIZE 7
-#define THRESHOLD .02f
-#define MIN_POINT_COUNT 5
+#define THRESHOLD .1f
+#define MIN_POINT_COUNT 10
 #define PI 3.14592f
 
 #include "ros/ros.h"
@@ -37,11 +37,21 @@ void cleanLinesOut(p2_delta::lineList &linesOut, p2_delta::pointList &pointsOut)
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "p2_delta_sensors");
-  ros::NodeHandle n;
-  ros::NodeHandle s;
-  ros::NodeHandle talk;
+  ros::NodeHandle nh;
+  //ros::NodeHandle s;
+  ros::NodeHandle talk1;
+  ros::NodeHandle talk2;
   ros::NodeHandle sense;
-  ros::Publisher cmd_vel_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+ // ros::Publisher cmd_vel_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+
+  ros::Rate loop_rate(10);
+
+//test
+ros::Publisher pub = nh.advertise<std_msgs::String>("topic_name", 5);
+std_msgs::String str;
+str.data = "hello world";
+pub.publish(str);
+
 
 
 //ros::topic::waitForMessage<nav_msgs::Odometry>(string("odom"), n,ros::Duration(30));
@@ -68,11 +78,10 @@ for(int i = 0; i < ANGLE_RES; i++)
 
   
    ros::Subscriber info_get = sense.subscribe("scan", 500, loadLaser);
-   ros::Publisher info_pub1 = talk.advertise<p2_delta::pointList>("worldinfoPoints", 50);
-   ros::Publisher info_pub2 = talk.advertise<p2_delta::lineList>("worldinfoLines", 50);
+   ros::Publisher info_pub1 = talk1.advertise<p2_delta::pointList>("worldinfoPoints", 50);
+   ros::Publisher info_pub2 = talk2.advertise<p2_delta::lineList>("worldinfoLines", 50);
 
-   p2_delta::lineList linesOut;
-   p2_delta::pointList pointsOut;
+   
    
 //begin your methodology
 
@@ -80,6 +89,9 @@ for(int i = 0; i < ANGLE_RES; i++)
 int testCount = 0;
 while(ros::ok())
 {
+
+p2_delta::lineList linesOut;
+p2_delta::pointList pointsOut;
 
 float* linearcoordX = new float[now.ranges.size()];
 float* linearcoordY = new float[now.ranges.size()];
@@ -108,7 +120,7 @@ float startpoint[2];
 
 for (int i = 0; i < now.ranges.size(); i++)
 {
-ROS_INFO("i: %d",i);
+//ROS_INFO("i: %d",i);
 	//checking for bad points
 	if( now.ranges[i] < 0.01 || now.ranges[i] >4){
 		skippedPointCount++;
@@ -120,29 +132,40 @@ ROS_INFO("i: %d",i);
 	{	
 
 		//check distance between points
+//ROS_INFO("i GReater then 1");
 		distanceSquared = pow(linearcoordX[i]-linearcoordX[i-(1+skippedPointCount)],2) + pow(linearcoordY[i] - linearcoordY[i-(1+skippedPointCount)],2);
 	    if(distanceSquared < pow(0.01 * (skippedPointCount+1),2))
 		{
+			//ROS_INFO("distancesquared less then blah balh");
 			//new wall
 			if(!stillwall)
 			{
+				//ROS_INFO("not still wall");
 				//if current point is still in range (accounting for skips...)
-				if(tempPointCount < MIN_POINT_COUNT + skippedPointCount){
+				if(tempPointCount < MIN_POINT_COUNT + skippedPointCount)
+				{
+
 					tempPointCount++;
+				//	ROS_INFO("tempCount: %d, Minpoint: %d",tempPointCount,MIN_POINT_COUNT + skippedPointCount);
 					//if we are ready to check slope, log slope
-					if(tempPointCount == MIN_POINT_COUNT + skippedPointCount){
+					if(tempPointCount == MIN_POINT_COUNT + skippedPointCount)
+					{
+					//	ROS_INFO("checking slope");
 						currSlope = (linearcoordY[i] - linearcoordY[i-tempPointCount])/(linearcoordX[i] - linearcoordX[i-tempPointCount]);
 						stillwall = true;
 						endpoint[0] = linearcoordX[i];
 						endpoint[1] = linearcoordY[i];
 						startpoint[0] = linearcoordX[i-tempPointCount];
 						startpoint[1] = linearcoordY[i-tempPointCount];
+						tempPointCount = 0;
+						skippedPointCount = 0;
 					}
 				}
 			}
 			//adding to wall
 			else
 			{
+				//ROS_INFO("still wall");
 				//test the slope against the slope for the new point
 				nextSlope = (linearcoordY[i] - endpoint[1])/(linearcoordX[i] - endpoint[0]);
 				if(nextSlope > (currSlope - THRESHOLD) && nextSlope < (currSlope + THRESHOLD))
@@ -152,32 +175,37 @@ ROS_INFO("i: %d",i);
 				}
 				else
 				{
+			//		ROS_INFO("wall end");
 					stillwall = false;
 					linesOut.x1.push_back(startpoint[0]);
 					linesOut.y1.push_back(startpoint[1]);
 					linesOut.x2.push_back(endpoint[0]);
 					linesOut.y2.push_back(endpoint[1]);
+					tempPointCount = 0;
+					skippedPointCount = 0;
 				}
 			}
 
 		}
 		else
 		{
+		//	ROS_INFO("distancesquared greater then blah balh");
 			if(stillwall)
 			{
+			//	ROS_INFO("stillwall");
 				linesOut.x1.push_back(startpoint[0]);
 				linesOut.y1.push_back(startpoint[1]);
 				linesOut.x2.push_back(endpoint[0]);
 				linesOut.y2.push_back(endpoint[1]);
 			}
 			stillwall = false;
-
+			tempPointCount = 0;
+			skippedPointCount = 0;
 			//since this point is not a wall, it is an obstacle
 			pointsOut.x.push_back(linearcoordX[i]);
 			pointsOut.y.push_back(linearcoordY[i]);
 		}
-		tempPointCount = 0;
-		skippedPointCount = 0;
+		
 			
 		
 
@@ -186,14 +214,15 @@ ROS_INFO("i: %d",i);
 		//end conversion
 
 }
-
-info_pub1.publish(linesOut);
-info_pub2.publish(pointsOut);
+ROS_INFO("lines out size: %d",linesOut.x1.size());
+info_pub2.publish(linesOut);
+info_pub1.publish(pointsOut);
 
 
 //ROS_INFO("ENDING LOOP Count: %d", testCount);
 //testCount++;
 ros::spinOnce();
+loop_rate.sleep();
 
 }
 
