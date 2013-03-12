@@ -3,10 +3,10 @@
 //posts them to "worldinfo" topic
 
 #define ANGLE_RES 10
-#define SKIP_MAX 2
-#define THRESHOLD .2
+#define SKIP_MAX 9
+#define THRESHOLD .4f
 
-#define PI 3.14592
+#define PI 3.14592f
 
 #include "ros/ros.h"
 #include <geometry_msgs/Twist.h>
@@ -16,6 +16,8 @@
 #include <sensor_msgs/LaserScan.h>
 #include <stdlib.h>
 #include <cmath>
+//#include <iostream>
+//#include <vector>
 
 //our custom messages
 #include <p2_delta/lineList.h>
@@ -29,6 +31,8 @@ sensor_msgs::LaserScan now;
 void loadLaser(const sensor_msgs::LaserScan& msg);
 
 void checkStateChange(const std_msgs::String& msg);
+
+void cleanLinesOut(p2_delta::lineList* linesOut);
 
 int main(int argc, char **argv)
 {
@@ -97,13 +101,13 @@ for(int i = 0; i < ANGLE_RES; i++)
 while(ros::ok())
 {
 
-int* linearcoordX = new int[now.ranges.size()];
-int* linearcoordY = new int[now.ranges.size()];
+float* linearcoordX = new float[now.ranges.size()];
+float* linearcoordY = new float[now.ranges.size()];
 
-
+cleanLinesOut(&linesOut);
 
 //convert to linear coords here
-ROS_INFO("making linear matrix");
+//ROS_INFO("making linear matrix");
 for (int i = 0; i < now.ranges.size(); i++)
 {
 	linearcoordX[i] = now.ranges[i] * cos(now.angle_min + i * now.angle_increment);
@@ -115,14 +119,14 @@ for (int i = 0; i < now.ranges.size(); i++)
 
 
 //make distance matrix
-int* distMatrix[ANGLE_RES];
+float* distMatrix[ANGLE_RES];
 for(int i = 0; i < ANGLE_RES; i++)
-	distMatrix[i] = new int[now.ranges.size()];
-int Xcross;
-int Ycross;
-int c1;
+	distMatrix[i] = new float[now.ranges.size()];
+float Xcross;
+float Ycross;
+float c1;
 
-ROS_INFO("populating linera matrix");
+//ROS_INFO("populating linear matrix");
 for(int i = 0; i < now.ranges.size(); i++)
 {
 	for(int j = 0; j < ANGLE_RES; j++)
@@ -146,20 +150,20 @@ int skips = 0;
 float lastHitX = 0;
 float lastHitY = 0;
 
-ROS_INFO("creating Hough transform matrix");
+//ROS_INFO("parsing Hough transform matrix");
 for(int j = 0; j < now.ranges.size(); j++)
 {
-
+	last = distMatrix[0][0];
 	for(int i = 0; i < ANGLE_RES; i++)
 	{   
-		ROS_INFO("j: %d , i: %d" , j, i);
+		//ROS_INFO("j: %d , i: %d, Value: %f" , j, i,distMatrix[i][j]);
 		// is like the last point
-		if(distMatrix[i][j] > last - THRESHOLD && distMatrix[i][j] < last + THRESHOLD && !(distMatrix[i][j] < .1f) && j > 0 )
+		if(distMatrix[i][j] > (last - THRESHOLD) && distMatrix[i][j] < (last + THRESHOLD) && !(distMatrix[i][j] < .1f) && j > 0  && (distMatrix[i][j] > 3.0f))
 		{
 			//new line
 			if(!onAline)
 			{
-				ROS_INFO("starting new line...");
+				//ROS_INFO("starting new line...");
 				onAline = true;
 				skips = 0;
 				//create new line	
@@ -175,7 +179,7 @@ for(int j = 0; j < now.ranges.size(); j++)
 			}
 			else 
 			{
-				ROS_INFO("continuing line...");
+				//ROS_INFO("continuing line...");
 				skips = 0;
 				linesOut.x2.back() = linearcoordX[j];
 				linesOut.y2.back() = linearcoordY[j];
@@ -185,14 +189,14 @@ for(int j = 0; j < now.ranges.size(); j++)
 			
 			}
 				
-			ROS_INFO("moving on...");
+			//ROS_INFO("moving on...");
 		}
 		//strayed from the line
 		else
 		{
 			if(onAline)
 			{
-				ROS_INFO("point skip");
+				//ROS_INFO("point skip");
 				skips++;
 				//grace period
 				if(skips < SKIP_MAX)
@@ -204,10 +208,12 @@ for(int j = 0; j < now.ranges.size(); j++)
 				//new line
 				else
 				{
-					ROS_INFO("ending line");
+					//ROS_INFO("ending line");
+					 
 					onAline = false;
 					linesOut.x2.back() = lastHitX;
 					linesOut.y2.back() = lastHitY;
+					//ROS_INFO("x1: %f, y1: %f, x2: %f, y2: %f", linesOut.x1.back(), linesOut.y1.back(), linesOut.x2.back(), linesOut.y2.back()); 
 
 					for(int k = 0; k < skips; k++)
 					{
@@ -217,20 +223,21 @@ for(int j = 0; j < now.ranges.size(); j++)
 				}
 			}
 		}
-
 		last = distMatrix[i][j];
+		
 	}
-	last = -50;
+	
 }
 info_pub1.publish(pointsOut);
 info_pub2.publish(linesOut);
 
-ROS_INFO("cleaning...");
+//ROS_INFO("cleaning...");
 delete [] linearcoordY;
 delete [] linearcoordX;
 for(int i = 0; i < ANGLE_RES; i++)
 	delete [] distMatrix[i];
 
+ROS_INFO("NUMBER OF LINES: %d ", linesOut.x1.size());
 ros::spinOnce();
 
 }
@@ -251,7 +258,7 @@ void loadLaser(const sensor_msgs::LaserScan& msg)
 {
 	//make a deep copy
 	//these are in radians
-	ROS_INFO("Sensors updated: point count = %f", msg.ranges.size());
+	//ROS_INFO("Sensors updated: point count = %d", msg.ranges.size());
 	now.angle_min = msg.angle_min;
 	now.angle_max = msg.angle_max;
 	now.angle_increment = msg.angle_increment;
@@ -267,3 +274,13 @@ void loadLaser(const sensor_msgs::LaserScan& msg)
 	}
 
 }
+
+void cleanLinesOut(p2_delta::lineList* linesOut)
+{
+	linesOut->x1.erase(linesOut->x1.begin(), linesOut->x1.end());
+	linesOut->y1.erase(linesOut->y1.begin(), linesOut->y1.end());
+	linesOut->x2.erase(linesOut->x2.begin(), linesOut->x2.end());
+	linesOut->y2.erase(linesOut->y2.begin(), linesOut->y2.end());
+}
+
+
