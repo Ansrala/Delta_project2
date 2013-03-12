@@ -60,14 +60,13 @@ ROS_INFO("STARTING LOOP");
 while(ros::ok())
 {
 	//testing stuff
-	output = wander(); //avoidObstacle();
+	output = wander();
 /*
-	if()  //safety dance
-	{}
-	else if() //door...stuff
-	{}
+	if() {output = dance();}
+	else if() {output = avoidObstacle();}
+	else if() {output = passThroughDoor();}
+	else {output = wander();}
 */
-	//etc
 	cmd_vel_pub.publish(output);
 	ros::spinOnce();
 }
@@ -118,6 +117,14 @@ void checkSensorChange(const serializer::SensorState& msg)
 	{
 		serialSensors.value.push_back(msg.value[i]);
 	}
+}
+
+geometry_msgs::Twist dance()
+{
+  geometry_msgs::Twist msg;
+  msg.linear.x = 0;
+  msg.angular.z = .3;
+  return msg;
 }
 
 geometry_msgs::Twist avoidObstacle()
@@ -181,13 +188,30 @@ for(int i = 0; i < walls.x1.size();i++){
 
 }
 
-//geometry_msgs::Twist passThroughDoor()
-//{
+geometry_msgs::Twist passThroughDoor()
+{
+  geometry_msgs::Twist msg;
 
+  if(obstacles.x[0] > -16 && obstacles.x[0] < 12)
+  {
+      //veer right
+      msg.linear.x = 0.1;
+      msg.angular.z = -0.3;
+  }
+  else if( obstacles.x[0] > 12 && obstacles.x[0] < 16){
+      //veer left slightly
+      msg.linear.x = 0.1;
+      msg.angular.z = 0.3;
+  }
+  else{
+      msg.linear.x = 0.25;
+      msg.angular.z = 0;
+  }
 //assume currstate will have local location for obstacles (x,y,r)
 //know bounds for walls (x1, y1) (x2, y2)
 //assume floats
-//}
+  return msg;
+}
 
 geometry_msgs::Twist wander()
 {
