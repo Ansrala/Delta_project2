@@ -277,15 +277,7 @@ geometry_msgs::Twist wander()
 
 float getValue()
 {
-  
-  for(int i = 0; i < serialSensors.name.size(); i++)
-  {
-	ROS_INFO("%d -index", i);
-    if(serialSensors.name[i] == "left_ir")
-    {
-      return serialSensors.value[i];
-    }
-  }
+  return serialSensors.value[1];
 }
 
 
