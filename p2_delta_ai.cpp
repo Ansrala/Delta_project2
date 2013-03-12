@@ -52,7 +52,8 @@ ros::topic::waitForMessage<nav_msgs::Odometry>(std::string("odom"), n,ros::Durat
    //we listen a little faster than we publish, since we don't know when it will change
   	ros::Subscriber suba = ls.subscribe("worldinfoPoints", 10, checkObstacleChange);
 	ros::Subscriber subb = rs.subscribe("worldinfoLines", 10, checkWallChange);
-        ros::Subscriber subc = ss.subscribe("serializer_node/sensors", 10, checkSensorChange);
+    ros::Subscriber subc = ss.subscribe("serializer/sensors", 10, checkSensorChange);
+	//['right_ir', 'left_ir', 'voltage', 'touch_1', 'touch_2'] 
 
    
 //begin your methodology
@@ -67,7 +68,8 @@ while(ros::ok())
 	else if() {output = passThroughDoor();}
 	else {output = wander();}
 */
-	cmd_vel_pub.publish(output);
+	//etc
+	//cmd_vel_pub.publish(output);
 	ros::spinOnce();
 }
 
@@ -108,6 +110,7 @@ void checkWallChange(const p2_delta::lineList& msg)
 
 void checkSensorChange(const serializer::SensorState& msg)
 {
+	//ROS_INFO("
   	for(int i = 0; i < msg.name.size(); i++)
 	{
 		serialSensors.name.push_back(msg.name[i]);	
@@ -219,7 +222,7 @@ geometry_msgs::Twist wander()
   geometry_msgs::Twist msg;
   ROS_INFO("BEGIN WANDER");
   float value = getValue(); 
-  ROS_INFO("%d sensorVal", value);
+  ROS_INFO("%f sensorVal", value);
   if(value<=15)//I'm too close to the wall
   {
 	ROS_INFO("VEER RIGHT");
