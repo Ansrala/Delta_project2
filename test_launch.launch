@@ -1,0 +1,10 @@
+<launch>
+	<!--our nodes here-->
+	
+	
+<!--	<node name = "AI" pkg= "p2_delta" type = "AI"/> -->
+	<node name = "sensor" pkg = "p2_delta" type = "sensor" output = "screen" />
+	<node name = "rviz" pkg = "rviz" type = "rviz" />
+
+
+</launch>
